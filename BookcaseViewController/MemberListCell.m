@@ -10,12 +10,6 @@
 
 @implementation MemberListCell
 
--(void)layoutSubviews
-{
-    self.contentView.frame = self.bounds;
-    [super layoutSubviews];
-
-}
 
 - (void)awakeFromNib {
     // Initialization code

@@ -10,16 +10,10 @@
 
 @implementation BookcaseListCell
 
-
--(void)layoutSubviews
-{
-    self.contentView.frame = self.bounds;
-    [super layoutSubviews];
-    
-}
-
 - (void)awakeFromNib {
     // Initialization code
 }
+
+
 
 @end

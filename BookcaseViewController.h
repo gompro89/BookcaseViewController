@@ -11,13 +11,13 @@
 @interface BookcaseViewController : UIViewController
 
 //vertical
-@property (weak, nonatomic) IBOutlet UICollectionView *vMemberCollectionView;
-@property (weak, nonatomic) IBOutlet UICollectionView *vBookcaseCollectionView;
+@property (weak, nonatomic) IBOutlet UICollectionView *memberCollectionView;
+@property (weak, nonatomic) IBOutlet UICollectionView *bookcaseCollectionView;
 
-//landscape
-@property (weak, nonatomic) IBOutlet UICollectionView *lMemberCollectionView;
-@property (weak, nonatomic) IBOutlet UICollectionView *lBookcaseCollectionView;
-
+@property (weak, nonatomic) IBOutlet UIView *detailView;
+@property (weak, nonatomic) IBOutlet UIImageView *detailMainImage;
+@property (weak, nonatomic) IBOutlet UIButton *bookCaseCVSizeBtn;
+@property (weak, nonatomic) IBOutlet UIView *grayView;
 
 @end
 
