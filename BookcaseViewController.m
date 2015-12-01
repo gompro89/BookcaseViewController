@@ -12,7 +12,7 @@
 #import "TextImage/TextImage.h"
 #import "AppDelegate.h"
 
-@interface BookcaseViewController ()<UICollectionViewDelegate,UICollectionViewDataSource>
+@interface BookcaseViewController ()<UICollectionViewDelegate,UICollectionViewDataSource,UIScrollViewDelegate>
 {
     //bookcase、memberListのcollectionViewが回転するたびに、flowLayoutを変える。
     UICollectionViewFlowLayout *bookcaseflowLayout;
@@ -29,6 +29,7 @@
     //Landscape BookcaseCollectionViewの高さ constant
     __weak IBOutlet NSLayoutConstraint *lbookcaseCVConstraint;
     
+    NSIndexPath *bookcaseCenterIndexPath;
 }
 
 @end
@@ -45,7 +46,9 @@ static NSString * const reuseBookcaseCellId = @"BookcaseListCell";
     
     [self.bookcaseCollectionView registerNib:[UINib nibWithNibName:reuseBookcaseCellId bundle:nil] forCellWithReuseIdentifier:reuseBookcaseCellId];
     [self.memberCollectionView registerNib:[UINib nibWithNibName:reuseMemberCellId bundle:nil] forCellWithReuseIdentifier:reuseMemberCellId];
-    
+   
+    [self.bookcaseCollectionView setExclusiveTouch:YES];
+    [self.memberCollectionView setExclusiveTouch:YES];
     // Do any additional setup after loading the view.
     [self initData];
 }
@@ -59,6 +62,7 @@ static NSString * const reuseBookcaseCellId = @"BookcaseListCell";
 {
     [self.grayView setHidden:YES];
     bookcaseLV = 1;
+    self.detailView.alpha = 0;
 }
 
 -(void)viewDidAppear:(BOOL)animated
@@ -218,7 +222,7 @@ static NSString * const reuseBookcaseCellId = @"BookcaseListCell";
     
     if (collectionView == self.bookcaseCollectionView)
     {
-        
+        [self.bookcaseCollectionView setUserInteractionEnabled:NO];
         [UIView animateWithDuration:.2f animations:^{
             self.detailView.alpha = 0;
         } completion:^(BOOL finished) {
@@ -235,10 +239,12 @@ static NSString * const reuseBookcaseCellId = @"BookcaseListCell";
                 [wow removeFromSuperview];
                 [self.detailMainImage setImage:cell.bookImage.image];
                 
+                [self.bookcaseCollectionView setUserInteractionEnabled:YES];
+                
                 [UIView animateWithDuration:0.15f animations:^{
                     self.detailView.alpha =1;
                 } completion:^(BOOL finished) {
-                    
+                   
                 }];
                 
             }];
@@ -251,16 +257,29 @@ static NSString * const reuseBookcaseCellId = @"BookcaseListCell";
 }
 
 #pragma mark -
+#pragma mark scrollView Delegate
+
+- (void)scrollViewDidEndDecelerating:(UIScrollView *)scrollView
+{
+    bookcaseCenterIndexPath = [self getbookcaseCurrentCenterIndexPath];
+}
+
+#pragma mark -
 #pragma mark orientation
 
 
 - (void)willAnimateRotationToInterfaceOrientation:(UIInterfaceOrientation)toInterfaceOrientation duration:(NSTimeInterval)duration
 {
+    
     [  self updateLayoutForNewOrientation: toInterfaceOrientation];
 }
 
 
 - (void) updateLayoutForNewOrientation: (UIInterfaceOrientation) orientation {
+    
+    if (bookcaseCenterIndexPath == nil) {
+        bookcaseCenterIndexPath = [NSIndexPath indexPathForRow:0 inSection:0];
+    }
     
     if (UIInterfaceOrientationIsLandscape(orientation)) {
         // Do some stuff
@@ -279,23 +298,17 @@ static NSString * const reuseBookcaseCellId = @"BookcaseListCell";
         memberListflowLayout.scrollDirection = UICollectionViewScrollDirectionHorizontal;
     }
     
-    
     [self.bookcaseCollectionView performBatchUpdates:^{
         [self.bookcaseCollectionView setCollectionViewLayout:bookcaseflowLayout animated:NO];
-        
     } completion:^(BOOL finished) {
+        [self.bookcaseCollectionView scrollToItemAtIndexPath:bookcaseCenterIndexPath atScrollPosition:![self isCurrentPortraitOrientation] ?UICollectionViewScrollPositionCenteredVertically : UICollectionViewScrollPositionCenteredHorizontally animated:NO];
         
     }];
     
+    [self.memberCollectionView setCollectionViewLayout:memberListflowLayout animated:NO];
     
-     [self.memberCollectionView performBatchUpdates:^{
-         [self.memberCollectionView setCollectionViewLayout:memberListflowLayout animated:NO];
-         
-    } completion:^(BOOL finished) {
-        
-       
-
-    }];
+    
+    
 }
 
 #pragma mark - 
@@ -311,14 +324,14 @@ static NSString * const reuseBookcaseCellId = @"BookcaseListCell";
     //sizeによる設定値
     if (bookcaseLV == 1)
     {
-        [self.grayView setHidden:NO];
+//        [self.grayView setHidden:NO];
 
         constant = 100;
         bookcaseLV = 2;
     }
     else
     {
-        [self.grayView setHidden:YES];
+//        [self.grayView setHidden:YES];
        
         constant = -100;
         bookcaseLV = 1;
@@ -338,7 +351,28 @@ static NSString * const reuseBookcaseCellId = @"BookcaseListCell";
         lbookcaseCVConstraint.constant += constant;
         btnFrame.origin.y -= constant;
     }
+    NSIndexPath *centerCellIndexPath = [self getbookcaseCurrentCenterIndexPath];
     
+    [self.bookcaseCollectionView.collectionViewLayout invalidateLayout];
+    [self.bookcaseCollectionView reloadData];
+    
+    [UIView animateWithDuration:.25f animations:^{
+        btn.frame = btnFrame;
+        
+        //constantの値を入れるとanimationが動かなくなるため
+        //constantの値を入れた後、layouIfNeededをまた呼び出す
+        [self.view layoutIfNeeded]; // Called on parent view
+        
+        [self.bookcaseCollectionView scrollToItemAtIndexPath:centerCellIndexPath atScrollPosition:![self isCurrentPortraitOrientation] ?UICollectionViewScrollPositionCenteredVertically : UICollectionViewScrollPositionCenteredHorizontally animated:NO];
+        
+    } completion:^(BOOL finished) {
+        
+    }];
+
+}
+
+-( NSIndexPath* )getbookcaseCurrentCenterIndexPath
+{
     //セルのサイズが変わるので、真ん中にあるセルをサイズが変わっても真ん中にくるよう設定
     NSArray *indexPaths = self.bookcaseCollectionView.indexPathsForVisibleItems;
     NSArray *sortedArray = [indexPaths sortedArrayUsingComparator: ^(NSIndexPath *obj1, NSIndexPath *obj2) {
@@ -360,7 +394,7 @@ static NSString * const reuseBookcaseCellId = @"BookcaseListCell";
         {
             return (NSComparisonResult)NSOrderedDescending;
         }
-
+        
         if (obj1.row < obj2.row)
         {
             return (NSComparisonResult)NSOrderedAscending;
@@ -368,26 +402,6 @@ static NSString * const reuseBookcaseCellId = @"BookcaseListCell";
         return (NSComparisonResult)NSOrderedSame;
     }];
     
-    
-    NSIndexPath *centerCellIndexPath = [sortedArray objectAtIndex:[indexPaths count] /2];
-    NSLog(@"%@",[sortedArray description]);
-    NSLog(@"%@",[centerCellIndexPath description]);
-    
-    [self.bookcaseCollectionView.collectionViewLayout invalidateLayout];
-    [self.bookcaseCollectionView reloadData];
-    
-    [UIView animateWithDuration:.25f animations:^{
-        btn.frame = btnFrame;
-        
-        //constantの値を入れるとanimationが動かなくなるため
-        //constantの値を入れた後、layouIfNeededをまた呼び出す
-        [self.view layoutIfNeeded]; // Called on parent view
-        
-        [self.bookcaseCollectionView scrollToItemAtIndexPath:centerCellIndexPath atScrollPosition:![self isCurrentPortraitOrientation] ?UICollectionViewScrollPositionCenteredVertically : UICollectionViewScrollPositionCenteredHorizontally animated:NO];
-        
-    } completion:^(BOOL finished) {
-        
-    }];
-
+    return [sortedArray objectAtIndex:[indexPaths count] /2];
 }
 @end
