@@ -61,6 +61,11 @@ static NSString * const reuseBookcaseCellId = @"BookcaseListCell";
     bookcaseLV = 1;
 }
 
+-(void)viewDidAppear:(BOOL)animated
+{
+    [self collectionView:self.bookcaseCollectionView didSelectItemAtIndexPath:[NSIndexPath indexPathForRow:0 inSection:0]];
+}
+
 #pragma mark checkOrientation
 -(BOOL)isCurrentPortraitOrientation
 {
@@ -213,19 +218,33 @@ static NSString * const reuseBookcaseCellId = @"BookcaseListCell";
     
     if (collectionView == self.bookcaseCollectionView)
     {
-//        UIView * wow = [cell snapshotViewAfterScreenUpdates:YES];
-        UIView *wow = [[UIView alloc] init];
-        [wow setFrame:frameRelativeToViewControllerView];
-        [wow setBackgroundColor:[UIColor greenColor]];
-        [wow setAlpha:0.5];
-        [self.view addSubview:wow];
         
-        [UIView animateWithDuration:0.25 delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
-            [wow setFrame:[self.detailMainImage convertRect:self.detailMainImage.bounds toView:self.view]];
+        [UIView animateWithDuration:.2f animations:^{
+            self.detailView.alpha = 0;
         } completion:^(BOOL finished) {
-            [wow removeFromSuperview];
-            [self.detailMainImage setImage:cell.bookImage.image];
+            //        UIView * wow = [cell snapshotViewAfterScreenUpdates:YES];
+            UIView *wow = [[UIView alloc] init];
+            [wow setFrame:frameRelativeToViewControllerView];
+            [wow setBackgroundColor:[UIColor greenColor]];
+            [wow setAlpha:0.5];
+            [self.view addSubview:wow];
+            
+            [UIView animateWithDuration:.25f delay:0 options:UIViewAnimationOptionCurveEaseInOut animations:^{
+                [wow setFrame:[self.detailMainImage convertRect:self.detailMainImage.bounds toView:self.view]];
+            } completion:^(BOOL finished) {
+                [wow removeFromSuperview];
+                [self.detailMainImage setImage:cell.bookImage.image];
+                
+                [UIView animateWithDuration:0.15f animations:^{
+                    self.detailView.alpha =1;
+                } completion:^(BOOL finished) {
+                    
+                }];
+                
+            }];
+
         }];
+
         
     }
     
@@ -288,8 +307,6 @@ static NSString * const reuseBookcaseCellId = @"BookcaseListCell";
     UIButton *btn = (UIButton*)sender;
     CGFloat constant = 0;
     CGRect btnFrame = btn.frame;
-    CGAffineTransform transform;
-    
     
     //sizeによる設定値
     if (bookcaseLV == 1)
@@ -298,7 +315,6 @@ static NSString * const reuseBookcaseCellId = @"BookcaseListCell";
 
         constant = 100;
         bookcaseLV = 2;
-        transform = CGAffineTransformScale(self.detailView.transform, 1, 1);
     }
     else
     {
@@ -306,7 +322,6 @@ static NSString * const reuseBookcaseCellId = @"BookcaseListCell";
        
         constant = -100;
         bookcaseLV = 1;
-        transform = CGAffineTransformScale(self.detailView.transform, 1, 1);
     }
     
     //constantの値を入れるとanimationが動かなくなるため
@@ -323,9 +338,6 @@ static NSString * const reuseBookcaseCellId = @"BookcaseListCell";
         lbookcaseCVConstraint.constant += constant;
         btnFrame.origin.y -= constant;
     }
-    
-    self.detailView.transform =transform;
-    
     
     //セルのサイズが変わるので、真ん中にあるセルをサイズが変わっても真ん中にくるよう設定
     NSArray *indexPaths = self.bookcaseCollectionView.indexPathsForVisibleItems;
