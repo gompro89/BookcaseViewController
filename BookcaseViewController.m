@@ -7,7 +7,6 @@
 //
 
 #import "BookcaseViewController.h"
-#import "UIImage+KWImageEdit.h"
 #import "BookcaseImportLists.h"
 #import "TextImage/TextImage.h"
 #import "AppDelegate.h"
@@ -60,9 +59,20 @@ static NSString * const reuseBookcaseCellId = @"BookcaseListCell";
 
 -(void)initData
 {
-    [self.grayView setHidden:YES];
+//    [self.grayView setHidden:YES];
     bookcaseLV = 1;
     self.detailView.alpha = 0;
+    // aViewは、UIView型のインスタンス
+    // 領域外をマスクで切り取る設定をしない
+    self.detailView.layer.masksToBounds = NO;
+    // 影のかかる方向を指定する
+    self.detailView.layer.shadowOffset = CGSizeMake(5.0f, 5.0f);
+    // 影の透明度
+    self.detailView.layer.shadowOpacity = 0.5f;
+    // 影の色
+    self.detailView.layer.shadowColor = [UIColor blackColor].CGColor;
+    // ぼかしの量
+    self.detailView.layer.shadowRadius = 5.0f;
 }
 
 -(void)viewDidAppear:(BOOL)animated
@@ -107,8 +117,18 @@ static NSString * const reuseBookcaseCellId = @"BookcaseListCell";
     
     BookcaseListCell *cell = [collectionView dequeueReusableCellWithReuseIdentifier:reuseBookcaseCellId forIndexPath:indexPath];
     
-    [cell.bookImage setImage:[TextImage textImage:[@(indexPath.row) stringValue] size:cell.frame.size fontSize:40.f]];
+//    [cell.bookImage setImage:[TextImage textImage:[@(indexPath.row) stringValue] size:cell.frame.size fontSize:40.f]];
+    
+    if (indexPath.row % 2 == 0) {
         
+        [cell.bookImage setImage:[UIImage imageNamed:@"mountain"]];
+        
+    }else{
+        
+        [cell.bookImage setImage:[UIImage imageNamed:@"sea"]];
+    
+    }
+    
     
     return cell;
 }
@@ -237,20 +257,19 @@ static NSString * const reuseBookcaseCellId = @"BookcaseListCell";
                 [wow setFrame:[self.detailMainImage convertRect:self.detailMainImage.bounds toView:self.view]];
             } completion:^(BOOL finished) {
                 [wow removeFromSuperview];
-                [self.detailMainImage setImage:cell.bookImage.image];
+                [self.detailMainImage setImage:[UIImage setFilter:cell.bookImage.image filter:CIFilterNamePhotoEffectProcess]];
+//                [self.detailMainImage setImage:[UIImage brightImage:cell.bookImage.image]];
+//                [self.detailMainImage setImage:cell.bookImage.image];
                 
                 [self.bookcaseCollectionView setUserInteractionEnabled:YES];
                 
                 [UIView animateWithDuration:0.15f animations:^{
                     self.detailView.alpha =1;
                 } completion:^(BOOL finished) {
-                   
                 }];
                 
             }];
-
         }];
-
         
     }
     

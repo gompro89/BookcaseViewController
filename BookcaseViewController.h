@@ -17,7 +17,7 @@
 @property (weak, nonatomic) IBOutlet UIView *detailView;
 @property (weak, nonatomic) IBOutlet UIImageView *detailMainImage;
 @property (weak, nonatomic) IBOutlet UIButton *bookCaseCVSizeBtn;
-@property (weak, nonatomic) IBOutlet UIView *grayView;
+//@property (weak, nonatomic) IBOutlet UIView *grayView;
 
 @end
 

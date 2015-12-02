@@ -7,8 +7,8 @@
 //
 
 #import <Foundation/Foundation.h>
-
 #import <UIKit/UIKit.h>
+#import "UIImage+KWPImage.h"
 
 @interface TextImage : NSObject
 +(UIImage*)textImage:(NSString*)text size:(CGSize)size;

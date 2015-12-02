@@ -7,7 +7,7 @@
 //
 
 #import "TextImage.h"
-#import "UIImage+KWImageEdit.h"
+
 
 @implementation TextImage
 
